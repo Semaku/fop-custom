@@ -19,6 +19,16 @@
       <artifactId>fop</artifactId>
       <version>1.1</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>avalon-framework-api</artifactId>
+          <groupId>org.apache.avalon.framework</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>avalon-framework-impl</artifactId>
+          <groupId>org.apache.avalon.framework</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
