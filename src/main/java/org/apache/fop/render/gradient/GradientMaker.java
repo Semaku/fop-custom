@@ -116,7 +116,9 @@ public final class GradientMaker {
         float[] fractions = gradient.getFractions();
         List<Float> bounds = new java.util.ArrayList<Float>(fractions.length);
         for (float offset : fractions) {
-            if (0f < offset && offset < 1f) {
+            if (offset == 1) {
+                bounds.add(0.9999f);
+            } else if (0f < offset && offset < 1f) {
                 bounds.add(offset);
             }
         }
