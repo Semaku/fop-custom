@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: TableLayoutManager.java 1658340 2015-02-09 09:53:37Z ssteiner $ */
+/* $Id: TableLayoutManager.java 1761021 2016-09-16 11:40:57Z ssteiner $ */
 
 package org.apache.fop.layoutmgr.table;
 
@@ -176,7 +176,7 @@ public class TableLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
 
         if (!getTable().isAutoLayout()
                 && getTable().getInlineProgressionDimension().getOptimum(this).getEnum()
-                    != EN_AUTO) {
+                != EN_AUTO) {
             autoLayout = false;
         }
     }
@@ -277,9 +277,8 @@ public class TableLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
 
         contentKnuthElements = contentLM.getNextKnuthElements(childLC, alignment);
         //Set index values on elements coming from the content LM
-        Iterator iter = contentKnuthElements.iterator();
-        while (iter.hasNext()) {
-            ListElement el = (ListElement)iter.next();
+        for (Object contentKnuthElement : contentKnuthElements) {
+            ListElement el = (ListElement) contentKnuthElement;
             notifyPos(el.getPosition());
         }
         log.debug(contentKnuthElements);
@@ -398,8 +397,8 @@ public class TableLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
         curBlockArea.setBPD(tableHeight);
 
         if (columnBackgroundAreas != null) {
-            for (Iterator iter = columnBackgroundAreas.iterator(); iter.hasNext();) {
-                ColumnBackgroundInfo b = (ColumnBackgroundInfo) iter.next();
+            for (Object columnBackgroundArea : columnBackgroundAreas) {
+                ColumnBackgroundInfo b = (ColumnBackgroundInfo) columnBackgroundArea;
                 TraitSetter.addBackground(b.backgroundArea,
                         b.column.getCommonBorderPaddingBackground(), this,
                         b.xShift, -b.backgroundArea.getYOffset(),
@@ -815,20 +814,20 @@ public class TableLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
         // Special handler for TableColumn width specifications
         if (fobj instanceof TableColumn && fobj.getParent() == getFObj()) {
             switch (lengthBase) {
-            case LengthBase.CONTAINING_BLOCK_WIDTH:
-                return getContentAreaIPD();
-            case LengthBase.TABLE_UNITS:
-                return (int) this.tableUnit;
-            default:
-                log.error("Unknown base type for LengthBase.");
-                return 0;
+                case LengthBase.CONTAINING_BLOCK_WIDTH:
+                    return getContentAreaIPD();
+                case LengthBase.TABLE_UNITS:
+                    return (int) this.tableUnit;
+                default:
+                    log.error("Unknown base type for LengthBase.");
+                    return 0;
             }
         } else {
             switch (lengthBase) {
-            case LengthBase.TABLE_UNITS:
-                return (int) this.tableUnit;
-            default:
-                return super.getBaseLength(lengthBase, fobj);
+                case LengthBase.TABLE_UNITS:
+                    return (int) this.tableUnit;
+                default:
+                    return super.getBaseLength(lengthBase, fobj);
             }
         }
     }
@@ -864,8 +863,7 @@ public class TableLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
         // if we get to this stage then we are at the footer of the table fragment; this means that no more
         // different TCLM need to be saved (we already have all); we flag the list as being complete then
         areAllTCLMsSaved = true;
-        for (int i = 0; i < savedTCLMs.size(); i++) {
-            TableCellLayoutManager tclm = savedTCLMs.get(i);
+        for (TableCellLayoutManager tclm : savedTCLMs) {
             if (this.repeatedHeader) {
                 tclm.setHasRepeatedHeader(true);
             }
@@ -918,7 +916,7 @@ public class TableLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
      * @param islast if the area being added has is-last trait
      */
     public void registerMarkers(Map<String, Marker> marks, boolean starting, boolean isfirst,
-            boolean islast) {
+                                boolean islast) {
         if (tableMarkers == null) {
             tableMarkers = new Markers();
         }
@@ -942,7 +940,7 @@ public class TableLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
     }
 
     protected void possiblyRegisterMarkersForTables(Map<String, Marker> markers, boolean isStarting,
-            boolean isFirst, boolean isLast) {
+                                                    boolean isFirst, boolean isLast) {
         // note: if we allow table-footer after a table-body this check should not be made and the markers
         // should be registered regardless because the retrieval may be done only in the footer
         if (hasRetrieveTableMarker) {
