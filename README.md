@@ -1,9 +1,9 @@
 # fop-custom
-Library with customizations & fixes to Apache FOP 2.1
+Library with customizations & fixes to Apache FOP 2.3
 
 It includes fixes for:
   * https://issues.apache.org/jira/browse/FOP-2536
-  * https://issues.apache.org/jira/browse/FOP-2549
+  * https://issues.apache.org/jira/browse/FOP-2617
 
 ## Building
   * mvn package
