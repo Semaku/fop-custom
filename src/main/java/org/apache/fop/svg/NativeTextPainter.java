@@ -383,11 +383,7 @@ public abstract class NativeTextPainter extends StrokingTextPainter {
             new TextLayoutFactory() {
                 public TextSpanLayout createTextLayout(AttributedCharacterIterator aci,
                                                        int [] charMap, Point2D offset, FontRenderContext frc) {
-                    if (ComplexGlyphLayout.mayRequireComplexLayout(aci)) {
-                        return new ComplexGlyphLayout(aci, charMap, offset, frc);
-                    } else {
-                        return new GlyphLayout(aci, charMap, offset, frc);
-                    }
+                    return new GlyphLayout(aci, charMap, offset, frc);
                 }
             };
 
