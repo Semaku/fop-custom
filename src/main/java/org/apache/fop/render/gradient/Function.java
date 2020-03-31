@@ -345,9 +345,7 @@ public class Function {
             }
             outputEncode(out, doubleFormatter);
             out.append("/Bounds ");
-            if (bounds != null) {
-                GradientMaker.outputDoubles(out, doubleFormatter, bounds);
-            } else if (!functions.isEmpty()) {
+            if (!functions.isEmpty()) {
                 // if there are n functions,
                 // there must be n-1 bounds.
                 // so let each function handle an equal portion
@@ -356,10 +354,22 @@ public class Function {
                 String functionsFraction = doubleFormatter.formatDouble(1.0 / numberOfFunctions);
                 out.append("[ ");
                 for (int i = 0; i + 1 < numberOfFunctions; i++) {
-                    out.append(functionsFraction);
+                    if (bounds != null && bounds.size() > 0) {
+                        float b;
+                        if (bounds.size() > i) {
+                            b = bounds.get(i);
+                        } else {
+                            b = bounds.get(bounds.size() - 1);
+                        }
+                        out.append(doubleFormatter.formatDouble(b));
+                    } else {
+                        out.append(functionsFraction);
+                    }
                     out.append(" ");
                 }
                 out.append("]");
+            } else if (bounds != null) {
+                GradientMaker.outputDoubles(out, doubleFormatter, bounds);
             }
             out.append("\n>>");
         } else if (functionType == 4) {
