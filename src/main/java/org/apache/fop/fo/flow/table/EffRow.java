@@ -39,7 +39,7 @@ public class EffRow {
     /** Indicates that the row is the last in a table-body */
     public static final int LAST_IN_PART = GridUnit.LAST_IN_PART;
 
-    private List gridUnits = new java.util.ArrayList();
+    private List<GridUnit> gridUnits = new java.util.ArrayList<GridUnit>();
     private int index;
     /** One of HEADER, FOOTER, BODY */
     private int bodyType;
@@ -52,13 +52,12 @@ public class EffRow {
      * @param bodyType type of body (one of HEADER, FOOTER, BODY as found on TableRowIterator)
      * @param gridUnits the grid units this row is made of
      */
-    public EffRow(int index, int bodyType, List gridUnits) {
+    public EffRow(int index, int bodyType, List<GridUnit> gridUnits) {
         this.index = index;
         this.bodyType = bodyType;
         this.gridUnits = gridUnits;
         // TODO this is ugly, but we may eventually be able to do without that index
-        for (Iterator guIter = gridUnits.iterator(); guIter.hasNext();) {
-            Object gu = guIter.next();
+        for (GridUnit gu : gridUnits) {
             if (gu instanceof PrimaryGridUnit) {
                 ((PrimaryGridUnit) gu).setRowIndex(index);
             }
@@ -118,7 +117,7 @@ public class EffRow {
     }
 
     /** @return the list of GridUnits for this EffRow */
-    public List getGridUnits() {
+    public List<GridUnit> getGridUnits() {
         return gridUnits;
     }
 
@@ -128,7 +127,7 @@ public class EffRow {
      * @return the requested grid unit.
      */
     public GridUnit getGridUnit(int column) {
-        return (GridUnit)gridUnits.get(column);
+        return gridUnits.get(column);
     }
 
     /**
@@ -140,7 +139,7 @@ public class EffRow {
      */
     public GridUnit safelyGetGridUnit(int column) {
         if (column < gridUnits.size()) {
-            return (GridUnit)gridUnits.get(column);
+            return gridUnits.get(column);
         } else {
             return null;
         }
@@ -175,8 +174,7 @@ public class EffRow {
         if (row != null) {
             keep = Keep.getKeep(row.getKeepWithPrevious());
         }
-        for (Iterator iter = gridUnits.iterator(); iter.hasNext();) {
-            GridUnit gu = (GridUnit) iter.next();
+        for (GridUnit gu : gridUnits) {
             if (gu.isPrimary()) {
                 keep = keep.compare(gu.getPrimary().getKeepWithPrevious());
             }
@@ -196,8 +194,7 @@ public class EffRow {
         if (row != null) {
             keep = Keep.getKeep(row.getKeepWithNext());
         }
-        for (Iterator iter = gridUnits.iterator(); iter.hasNext();) {
-            GridUnit gu = (GridUnit) iter.next();
+        for (GridUnit gu : gridUnits) {
             if (!gu.isEmpty() && gu.getColSpanIndex() == 0 && gu.isLastGridUnitRowSpan()) {
                 keep = keep.compare(gu.getPrimary().getKeepWithNext());
             }
@@ -233,8 +230,7 @@ public class EffRow {
      */
     public int getBreakBefore() {
         int breakBefore = Constants.EN_AUTO;
-        for (Iterator iter = gridUnits.iterator(); iter.hasNext();) {
-            GridUnit gu = (GridUnit) iter.next();
+        for (GridUnit gu : gridUnits) {
             if (gu.isPrimary()) {
                 breakBefore = BreakUtil.compareBreakClasses(breakBefore,
                         gu.getPrimary().getBreakBefore());
@@ -257,8 +253,7 @@ public class EffRow {
      */
     public int getBreakAfter() {
         int breakAfter = Constants.EN_AUTO;
-        for (Iterator iter = gridUnits.iterator(); iter.hasNext();) {
-            GridUnit gu = (GridUnit) iter.next();
+        for (GridUnit gu : gridUnits) {
             if (!gu.isEmpty() && gu.getColSpanIndex() == 0 && gu.isLastGridUnitRowSpan()) {
                 breakAfter = BreakUtil.compareBreakClasses(breakAfter,
                         gu.getPrimary().getBreakAfter());
@@ -269,7 +264,7 @@ public class EffRow {
 
     /** {@inheritDoc} */
     public String toString() {
-        StringBuffer sb = new StringBuffer("EffRow {");
+        StringBuilder sb = new StringBuilder("EffRow {");
         sb.append(index);
         if (getBodyType() == TableRowIterator.BODY) {
             sb.append(" in body");

@@ -131,6 +131,8 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
 
     private final Position auxiliaryPosition = new LeafPosition(this, -1);
 
+    private int minimumIPD = -1;
+
     /**
      * Create a Text layout manager.
      *
@@ -873,10 +875,40 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
         if (returnList.isEmpty()) {
             return null;
         } else {
+            determineMinIPD(returnList, context);
             return returnList;
         }
 
 
+    }
+
+    /**
+     * Determines the minIPD of the textLM's {@link #foText} by returning the width of its longest string.<br>
+     * TODO: Currently, this dedicated iteration is rather wasteful and should be integrated
+     * into {@link #getNextKnuthElements(LayoutContext, int)}, if possible. Additionally, the
+     * algorithm is quite trivial and does not take any linebreak possibilities etc. into account.
+     *
+     * @param returnList KnuthSequence of KnuthElements representing the object's {@link #foText}
+     * @param context
+     */
+    private void determineMinIPD(List returnList, LayoutContext context) {
+        minimumIPD = 0;
+        ListIterator iter = returnList.listIterator();
+        while (iter.hasNext()) {
+            KnuthSequence sequence = (KnuthSequence) iter.next();
+            if (context.isInAutoLayoutDeterminationMode()) {
+                final ListIterator i = sequence.listIterator();
+
+                while (i.hasNext()) {
+                    final KnuthElement element = (KnuthElement) i.next();
+                    if (element instanceof KnuthBox) {
+                        //TODO: improve algorithm!
+                        minimumIPD = Math.max(minimumIPD, element.getWidth());
+                    }
+                }
+                log.debug("TextLayoutManager with minIPD:=" + minimumIPD);
+            }
+        }
     }
 
     private KnuthSequence processLinebreak(List returnList, KnuthSequence sequence) {
@@ -1464,6 +1496,17 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
                 + "\'"
                 + ", len = " + foText.length()
                 + "}";
+    }
+
+    /**
+     * returns the minimum IPD (aka 'the longest box') required for the line.
+     * Must only be used for table with table-layout="auto".
+     *
+     * @return the longest KnuthBox encountered
+     */
+    public int getMinimumIPD() {
+        assert minimumIPD > -1;
+        return minimumIPD;
     }
 
 }

@@ -52,6 +52,23 @@ public final class LayoutContext {
 
     private static final int TREAT_AS_ARTIFACT = 0x20;
 
+    /**
+     * Flags related to "auto" table layout
+     */
+    private static final int IN_AUTO_LAYOUT_DETERMINATION_MODE = 0x40;
+
+    private static final int IS_CHILD_OF_AUTO_LAYOUT_ELEMENT = 0x80;
+
+    /**
+     * Flag related to "fox:disable-column-balancing"
+     */
+    private static final int DISABLE_COLUMN_BALANCING = 0x100;
+
+    private static final int PROPAGATED_FLAGS =
+            TREAT_AS_ARTIFACT
+                    | IN_AUTO_LAYOUT_DETERMINATION_MODE
+                    | IS_CHILD_OF_AUTO_LAYOUT_ELEMENT;
+
     private int flags; // Contains some set of flags defined above
 
     /**
@@ -85,13 +102,13 @@ public final class LayoutContext {
      * A list of pending marks (border and padding) on the after edge when a page break occurs.
      * May be null.
      */
-    private List pendingAfterMarks;
+    private List<ListElement> pendingAfterMarks;
 
     /**
      * A list of pending marks (border and padding) on the before edge when a page break occurs.
      * May be null.
      */
-    private List pendingBeforeMarks;
+    private List<ListElement> pendingBeforeMarks;
 
     /** Current hyphenation context. May be null. */
     private HyphContext hyphContext;
@@ -141,7 +158,7 @@ public final class LayoutContext {
      */
     public static LayoutContext offspringOf(LayoutContext parent) {
         LayoutContext offspring = new LayoutContext(0);
-        offspring.setTreatAsArtifact(parent.treatAsArtifact());
+        offspring.propagateFlagsFrom(parent);
         return offspring;
     }
 
@@ -169,18 +186,18 @@ public final class LayoutContext {
     private LayoutContext(int flags) {
         this.flags = flags;
         this.refIPD = 0;
-        stackLimitBP = MinOptMax.ZERO;
-        leadingSpace = null;
-        trailingSpace = null;
+        this.stackLimitBP = MinOptMax.ZERO;
+        this.leadingSpace = null;
+        this.trailingSpace = null;
     }
 
     /** @param source from which pending marks are copied */
     public void copyPendingMarksFrom(LayoutContext source) {
         if (source.pendingAfterMarks != null) {
-            this.pendingAfterMarks = new java.util.ArrayList(source.pendingAfterMarks);
+            this.pendingAfterMarks = new java.util.ArrayList<ListElement>(source.pendingAfterMarks);
         }
         if (source.pendingBeforeMarks != null) {
-            this.pendingBeforeMarks = new java.util.ArrayList(source.pendingBeforeMarks);
+            this.pendingBeforeMarks = new java.util.ArrayList<ListElement>(source.pendingBeforeMarks);
         }
     }
 
@@ -206,6 +223,15 @@ public final class LayoutContext {
         setFlags(flags, false);
     }
 
+    /**
+     * Propagate flags from the given parent context
+     *
+     * @param parentLC  the parent context
+     */
+    public void propagateFlagsFrom(LayoutContext parentLC) {
+        this.flags = (parentLC.flags & PROPAGATED_FLAGS);
+    }
+
     /** @return true if new area is set */
     public boolean isStart() {
         return ((this.flags & NEW_AREA) != 0);
@@ -229,6 +255,74 @@ public final class LayoutContext {
     /** @return true if suppress break before is set */
     public boolean suppressBreakBefore() {
         return ((this.flags & SUPPRESS_BREAK_BEFORE) != 0);
+    }
+
+    /** @return true if "treat as artifact" is set */
+    public boolean treatAsArtifact() {
+        return (flags & TREAT_AS_ARTIFACT) != 0;
+    }
+
+    /**
+     * Sets the "treat as artifact" flag
+     * @param treatAsArtifact   the flag boolean value
+     */
+    public void setTreatAsArtifact(boolean treatAsArtifact) {
+        setFlags(TREAT_AS_ARTIFACT, treatAsArtifact);
+    }
+
+
+    /** @return whether the column balancer should be disabled before a spanning block. */
+    public boolean isColumnBalancingDisabled() {
+        return (flags & DISABLE_COLUMN_BALANCING) != 0;
+    }
+
+    /**
+     * Disables column balancing before a spanning block
+     *
+     * @see #isColumnBalancingDisabled()
+     */
+    public void disableColumnBalancing() {
+        setFlags(DISABLE_COLUMN_BALANCING, true);
+    }
+
+    /**
+     * Enables column balancing before a spanning block
+     *
+     * @see #isColumnBalancingDisabled()
+     */
+    public void enableColumnBalancing() {
+        unsetFlags(DISABLE_COLUMN_BALANCING);
+    }
+
+    /**
+     * @param b
+     */
+    public void setChildOfAutoLayoutElement(boolean b) {
+        setFlags(IS_CHILD_OF_AUTO_LAYOUT_ELEMENT, b);
+    }
+
+    /**
+     *
+     * @return
+     */
+    public boolean isChildOfAutoLayoutElement() {
+        return (flags & IS_CHILD_OF_AUTO_LAYOUT_ELEMENT) != 0;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public boolean isInAutoLayoutDeterminationMode() {
+        return (flags & IN_AUTO_LAYOUT_DETERMINATION_MODE) != 0;
+    }
+
+    /**
+     *
+     * @param b
+     */
+    public void setInAutoLayoutDeterminationMode(boolean b) {
+        setFlags(IN_AUTO_LAYOUT_DETERMINATION_MODE, b);
     }
 
     /**
@@ -334,7 +428,7 @@ public final class LayoutContext {
      */
     public void addPendingAfterMark(UnresolvedListElementWithLength element) {
         if (this.pendingAfterMarks == null) {
-            this.pendingAfterMarks = new java.util.ArrayList();
+            this.pendingAfterMarks = new java.util.ArrayList<ListElement>();
         }
         this.pendingAfterMarks.add(element);
     }
@@ -343,7 +437,7 @@ public final class LayoutContext {
      * @return the pending border and padding elements at the after edge
      * @see #addPendingAfterMark(UnresolvedListElementWithLength)
      */
-    public List getPendingAfterMarks() {
+    public List<ListElement> getPendingAfterMarks() {
         if (this.pendingAfterMarks != null) {
             return Collections.unmodifiableList(this.pendingAfterMarks);
         } else {
@@ -367,7 +461,7 @@ public final class LayoutContext {
      */
     public void addPendingBeforeMark(UnresolvedListElementWithLength element) {
         if (this.pendingBeforeMarks == null) {
-            this.pendingBeforeMarks = new java.util.ArrayList();
+            this.pendingBeforeMarks = new java.util.ArrayList<ListElement>();
         }
         this.pendingBeforeMarks.add(element);
     }
@@ -376,7 +470,7 @@ public final class LayoutContext {
      * @return the pending border and padding elements at the before edge
      * @see #addPendingBeforeMark(UnresolvedListElementWithLength)
      */
-    public List getPendingBeforeMarks() {
+    public List<ListElement> getPendingBeforeMarks() {
         if (this.pendingBeforeMarks != null) {
             return Collections.unmodifiableList(this.pendingBeforeMarks);
         } else {
@@ -686,12 +780,5 @@ public final class LayoutContext {
         this.disableColumnBalancing = disableColumnBalancing;
     }
 
-    public boolean treatAsArtifact() {
-        return (flags & TREAT_AS_ARTIFACT) != 0;
-    }
-
-    public void setTreatAsArtifact(boolean treatAsArtifact) {
-        setFlags(TREAT_AS_ARTIFACT, treatAsArtifact);
-    }
 }
 
