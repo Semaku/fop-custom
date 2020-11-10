@@ -280,4 +280,14 @@ public abstract class AbstractBaseLayoutManager
     public void recreateChildrenLMs() {
 
     }
+
+    /** {@inheritDoc} */
+    public int getMinimumIPD() {
+        int minimumIPD = -1;
+        for (LayoutManager childLM : getChildLMs()) {
+            int curMinIPD = childLM.getMinimumIPD();
+            minimumIPD = Math.max(minimumIPD, curMinIPD);
+        }
+        return minimumIPD;
+    }
 }

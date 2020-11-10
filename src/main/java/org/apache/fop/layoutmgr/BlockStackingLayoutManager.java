@@ -37,6 +37,7 @@ import org.apache.fop.fo.properties.CommonBorderPaddingBackground;
 import org.apache.fop.fo.properties.KeepProperty;
 import org.apache.fop.fo.properties.SpaceProperty;
 import org.apache.fop.layoutmgr.inline.InlineContainerLayoutManager;
+import org.apache.fop.layoutmgr.inline.LineLayoutManager;
 import org.apache.fop.layoutmgr.inline.InlineLayoutManager;
 import org.apache.fop.traits.MinOptMax;
 import org.apache.fop.util.ListUtil;
@@ -195,10 +196,10 @@ public abstract class BlockStackingLayoutManager extends AbstractLayoutManager
      *
      * @return the resulting content area IPD
      */
-    protected int updateContentAreaIPDwithOverconstrainedAdjust() {
+    protected int updateContentAreaIPDwithOverconstrainedAdjust(LayoutContext context) {
         int ipd = referenceIPD - (startIndent + endIndent);
-        if (ipd < 0) {
-            //5.3.4, XSL 1.0, Overconstrained Geometry
+        if (ipd < 0 && !context.isChildOfAutoLayoutElement()) {
+            //5.3.4, XSL 1.1, Overconstrained Geometry
             log.debug("Adjusting end-indent based on overconstrained geometry rules for " + fobj);
             BlockLevelEventProducer eventProducer = BlockLevelEventProducer.Provider.get(
                     getFObj().getUserAgent().getEventBroadcaster());
@@ -221,7 +222,7 @@ public abstract class BlockStackingLayoutManager extends AbstractLayoutManager
     protected int updateContentAreaIPDwithOverconstrainedAdjust(int contentIPD) {
         int ipd = referenceIPD - (contentIPD + (startIndent + endIndent));
         if (ipd < 0) {
-            //5.3.4, XSL 1.0, Overconstrained Geometry
+            //5.3.4, XSL 1.1, Overconstrained Geometry
             log.debug("Adjusting end-indent based on overconstrained geometry rules for " + fobj);
             BlockLevelEventProducer eventProducer = BlockLevelEventProducer.Provider.get(
                     getFObj().getUserAgent().getEventBroadcaster());
@@ -244,7 +245,7 @@ public abstract class BlockStackingLayoutManager extends AbstractLayoutManager
     public List getNextKnuthElements(LayoutContext context, int alignment,
                                      Stack lmStack, Position restartPosition, LayoutManager restartAtLM) {
         referenceIPD = context.getRefIPD();
-        updateContentAreaIPDwithOverconstrainedAdjust();
+        updateContentAreaIPDwithOverconstrainedAdjust(context);
 
         boolean isRestart = (lmStack != null);
         boolean emptyStack = (!isRestart || lmStack.isEmpty());
@@ -294,6 +295,17 @@ public abstract class BlockStackingLayoutManager extends AbstractLayoutManager
                         lmStack, restartPosition, restartAtLM);
                 // once encountered, irrelevant for following child LMs
                 emptyStack = true;
+            }
+
+            final int ipd = childLC.getRefIPD();
+            if (getContentAreaIPD() < ipd && context.isChildOfAutoLayoutElement()) {
+                if (currentChildLM instanceof LineLayoutManager) {
+                    referenceIPD = startIndent + ipd + endIndent;
+                } else {
+                    referenceIPD = ipd;
+                }
+                updateContentAreaIPDwithOverconstrainedAdjust(context);
+                context.setRefIPD(this.referenceIPD);
             }
 
             if (contentList.isEmpty()) {
@@ -384,7 +396,7 @@ public abstract class BlockStackingLayoutManager extends AbstractLayoutManager
      * @return a new child layout context
      */
     protected LayoutContext makeChildLayoutContext(LayoutContext context) {
-        LayoutContext childLC = LayoutContext.newInstance();
+        LayoutContext childLC = LayoutContext.offspringOf(context);
         childLC.copyPendingMarksFrom(context);
         childLC.setStackLimitBP(context.getStackLimitBP());
         childLC.setRefIPD(referenceIPD);

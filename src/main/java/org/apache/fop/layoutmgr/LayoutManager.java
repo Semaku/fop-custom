@@ -114,7 +114,7 @@ public interface LayoutManager extends PercentBaseContext {
     /**
      * @return the list of child LMs
      */
-    List getChildLMs();
+    List<LayoutManager> getChildLMs();
 
     /**
      * Add the LM in the argument to the list of child LMs;
@@ -271,4 +271,12 @@ public interface LayoutManager extends PercentBaseContext {
      */
     List getNextKnuthElements(LayoutContext context, int alignment, Stack lmStack,
                               Position positionAtIPDChange, LayoutManager restartAtLM);
+
+    /**
+     * Iterates over all childLMs to obtain the minimal width required to render all of them (i.e. their content)
+     * without an overflow.
+     * @return returns the longest required minimal width of all contained layout managers
+     */
+    int getMinimumIPD();
+
 }

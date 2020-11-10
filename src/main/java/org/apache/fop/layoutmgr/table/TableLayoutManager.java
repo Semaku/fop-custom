@@ -91,7 +91,7 @@ public class TableLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
     private int halfBorderSeparationIPD;
 
     /** See {@link TableLayoutManager#registerColumnBackgroundArea(TableColumn, Block, int)}. */
-    private List columnBackgroundAreas;
+    private List<ColumnBackgroundInfo> columnBackgroundAreas;
 
     private Position auxiliaryPosition;
 
@@ -225,7 +225,7 @@ public class TableLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
                         getTable().getUserAgent().getEventBroadcaster());
                 eventProducer.tableFixedAutoWidthNotSupported(this, getTable().getLocator());
             }
-            updateContentAreaIPDwithOverconstrainedAdjust();
+            updateContentAreaIPDwithOverconstrainedAdjust(context);
         }
         int sumOfColumns = columns.getSumOfColumnWidths(this);
         if (!autoLayout && sumOfColumns > getContentAreaIPD()) {
@@ -247,7 +247,7 @@ public class TableLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
          * for proportional-column-width()
          */
         if (tableUnit == 0.0) {
-            this.tableUnit = columns.computeTableUnit(this);
+            this.tableUnit = columns.computeTableUnit(this, context);
         }
 
         if (!firstVisibleMarkServed) {
@@ -274,6 +274,24 @@ public class TableLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
                                  stackSize));*/
         childLC.setRefIPD(context.getRefIPD());
         childLC.copyPendingMarksFrom(context);
+
+        // width determination is required for any elements in auto-layout containers
+        if (isAutoLayout() || context.isChildOfAutoLayoutElement()) {
+            childLC.setChildOfAutoLayoutElement(true);
+            childLC.setInAutoLayoutDeterminationMode(true);
+            contentLM.determineAutoLayoutWidths(childLC, alignment);
+
+            // determination mode ends only if the parent is not still in this mode
+            if (!context.isInAutoLayoutDeterminationMode()) {
+                childLC.setInAutoLayoutDeterminationMode(false);
+            }
+
+            int maxCol = columns.computeOptimalColumnWidthsForAutoLayout(this, context, getTable().getWidth());
+            // report the determined maximum width to the enquiring parent
+            if (context.isChildOfAutoLayoutElement() && context.isInAutoLayoutDeterminationMode()) {
+                context.setRefIPD(maxCol);
+            }
+        }
 
         contentKnuthElements = contentLM.getNextKnuthElements(childLC, alignment);
         //Set index values on elements coming from the content LM
@@ -350,7 +368,7 @@ public class TableLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
     void registerColumnBackgroundArea(TableColumn column, Block backgroundArea, int xShift) {
         addBackgroundArea(backgroundArea);
         if (columnBackgroundAreas == null) {
-            columnBackgroundAreas = new ArrayList();
+            columnBackgroundAreas = new ArrayList<ColumnBackgroundInfo>();
         }
         columnBackgroundAreas.add(new ColumnBackgroundInfo(column, backgroundArea, xShift));
     }
@@ -397,8 +415,7 @@ public class TableLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
         curBlockArea.setBPD(tableHeight);
 
         if (columnBackgroundAreas != null) {
-            for (Object columnBackgroundArea : columnBackgroundAreas) {
-                ColumnBackgroundInfo b = (ColumnBackgroundInfo) columnBackgroundArea;
+            for (ColumnBackgroundInfo b : columnBackgroundAreas) {
                 TraitSetter.addBackground(b.backgroundArea,
                         b.column.getCommonBorderPaddingBackground(), this,
                         b.xShift, -b.backgroundArea.getYOffset(),
@@ -805,6 +822,116 @@ public class TableLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
         return getTable().getKeepWithNext();
     }
 
+
+    /**
+     * Takes a {@link TableColumn} and looks up its {@link MinOptMax} width values.
+     * However, returns <code>null</code> for {@link TableColumn}s which have a static
+     * width value or any columns which do not have a {@link MinOptMax} object associated
+     * with them (i.e. columns which do not contain a {@link PrimaryGridUnit} but only
+     * {@link GridUnit}s which do not define a width themselves).
+     *
+     * @param tcol
+     * @param context
+     * @return {@link MinOptMax} or <code>null</code>
+     */
+    public MinOptMax getPossibleWidths(TableColumn tcol, LayoutContext context) {
+        if (this.contentLM != null && (isAutoLayout() || context.isChildOfAutoLayoutElement())) {
+            if (tcol.isAutoLayout()) {
+                final MinOptMax length = this.contentLM.getBaseLength(tcol);
+                if (length != null) {
+                    return length;
+                }
+            } else {
+                // column uses a static value instead
+                return null;
+            }
+        }
+        /** we may end up here if the table contains cells with invalid columns-spanned attribute
+         * UPDATE: since there is no such thing as an invalid columns-spanned attribute (columns
+         * are simply dynamically added as required) this case cannot be considered to be an error
+         * anymore - simply return null and let the caller take care of this case. */
+        return null;
+    }
+
+    /** {@inheritDoc} */
+    final boolean isAutoLayout() {
+        return getTable().isAutoLayout();
+    }
+
+    /** {@inheritDoc}<br>Determination is based on the type of layout used for the table. */
+    public int getMinimumIPD() {
+        int minimumIPD = -1;
+        int curMinIPD = 0;
+        if (contentLM != null) {
+            if (this.isAutoLayout()) {
+                curMinIPD = getMinimumIPDforAutoLayout();
+            } else {
+                curMinIPD = getMinimumIPDforFixedLayout();
+            }
+            // TODO: add Indents/Paddings/...
+            minimumIPD = Math.max(minimumIPD, curMinIPD);
+        }
+        return minimumIPD;
+    }
+
+    /**
+     * obtains the width of the widest column and returns this width times the number of columns
+     * @return width of widest columns times number of columns
+     */
+    private int getMinimumIPDforFixedLayout() {
+        int staticWidth = 0;
+        int widestMinWidthForAutoColumns = 0;
+        int curMinIPD = 0;
+        int autoColumns = 0;
+        for (Iterator<TableColumn> iter = columns.iterator(); iter.hasNext(); ) {
+            TableColumn tcol = iter.next();
+
+            if (!tcol.isAutoLayout()) {
+                // a static column should always requires the same amount of space
+                staticWidth += tcol.getColumnWidth().getValue(this);
+            } else {
+                MinOptMax width = contentLM.getBaseLength(tcol);
+                if (width != null) {
+                    widestMinWidthForAutoColumns = Math.max(widestMinWidthForAutoColumns, width.getMin());
+                }
+                autoColumns++;
+            }
+        }
+        return widestMinWidthForAutoColumns * autoColumns + staticWidth;
+    }
+
+    /**
+     * obtains the width of each individual column and returns the sum of these widths
+     * @return sum of the width of all columns
+     */
+    private int getMinimumIPDforAutoLayout() {
+        int curMinIPD = 0;
+        for (Iterator<TableColumn> iter = columns.iterator(); iter.hasNext(); ) {
+            TableColumn tcol = iter.next();
+            MinOptMax width = contentLM.getBaseLength(tcol);
+            if (width != null) {
+                curMinIPD += width.getMin();
+            }
+        }
+        return curMinIPD;
+    }
+
+    /**
+     * Used only for auto layout tables.
+     * Forwards the new width values ({@link MinOptMax} widths)
+     * of a column to the appropriate {@link TableContentLayoutManager}.
+     * @param tcol {@link TableColumn} which acts as key to get/set the width
+     * @param mom {@link MinOptMax} containing the appropriate values for the column
+     */
+    public void setPossibleWidths(TableColumn tcol, MinOptMax mom) {
+        assert this.contentLM != null;
+        //assert isAutoLayout();
+        if (tcol.isAutoLayout()) {
+            this.contentLM.setBaseLength(tcol, mom);
+        }
+    }
+
+
     // --------- Property Resolution related functions --------- //
 
     /**
@@ -817,6 +944,12 @@ public class TableLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
                 case LengthBase.CONTAINING_BLOCK_WIDTH:
                     return getContentAreaIPD();
                 case LengthBase.TABLE_UNITS:
+                    if (this.contentLM != null && isAutoLayout()) {
+                        if (((TableColumn) fobj).isAutoLayout()) {
+                            final MinOptMax length = this.contentLM.getBaseLength(fobj);
+                            return length == null ? 0 : length.getOpt();
+                        }
+                    }
                     return (int) this.tableUnit;
                 default:
                     log.error("Unknown base type for LengthBase.");
