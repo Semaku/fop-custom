@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.2.0] - 2020-11-13
+### Changed
+- Limited support to FOP 2.1
+### Fixed
+- Added support for auto table layout (https://issues.apache.org/jira/browse/FOP-2469)
+
 ## [2.1.2] - 2020-03-31
 ### Fixed
 - Reapplied lost fix for the issue with linear gradient stop offsets resulting in broken PDFs (https://issues.apache.org/jira/browse/FOP-2549)
