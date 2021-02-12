@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -119,7 +121,18 @@ public final class FopFactory implements ImageContext {
      * @return the requested FopFactory instance.
      */
     public static FopFactory newInstance(FopFactoryConfig config) {
-        return new FopFactory(config);
+        final FopFactory fopFactory = new FopFactory(config);
+
+        try {
+            final Class<?> jeuclidConfigurator = Class.forName("net.sourceforge.jeuclid.fop.plugin.JEuclidFopFactoryConfigurator");
+            final Method m = jeuclidConfigurator.getMethod("configure", FopFactory.class);
+            m.invoke(null, fopFactory);
+            log.info("Enabled JEuclid support");
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            log.debug("Disabled JEuclid support: " + e.getLocalizedMessage());
+        }
+
+        return fopFactory;
     }
 
     /**
