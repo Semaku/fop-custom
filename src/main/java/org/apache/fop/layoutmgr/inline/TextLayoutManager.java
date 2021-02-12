@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: TextLayoutManager.java 1827168 2018-03-19 08:49:57Z ssteiner $ */
+/* $Id: TextLayoutManager.java 1863872 2019-07-27 13:57:02Z matthias $ */
 
 package org.apache.fop.layoutmgr.inline;
 
@@ -28,10 +28,12 @@ import java.util.ListIterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.area.Trait;
 import org.apache.fop.area.inline.TextArea;
 import org.apache.fop.fo.Constants;
 import org.apache.fop.fo.FOText;
+import org.apache.fop.fo.flow.ChangeBar;
 import org.apache.fop.fonts.Font;
 import org.apache.fop.fonts.FontSelector;
 import org.apache.fop.fonts.GlyphMapping;
@@ -131,6 +133,8 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
 
     private final Position auxiliaryPosition = new LeafPosition(this, -1);
 
+    private FOUserAgent userAgent;
+
     private int minimumIPD = -1;
 
     /**
@@ -138,10 +142,11 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
      *
      * @param node The FOText object to be rendered
      */
-    public TextLayoutManager(FOText node) {
+    public TextLayoutManager(FOText node, FOUserAgent userAgent) {
         foText = node;
         letterSpaceAdjustArray = new MinOptMax[node.length() + 1];
         mappings = new ArrayList<GlyphMapping>();
+        this.userAgent = userAgent;
     }
 
     private KnuthPenalty makeZeroWidthPenalty(int penaltyValue) {
@@ -314,6 +319,7 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
 
         TextArea textArea = new TextAreaBuilder(realWidth, totalAdjust, context, firstMappingIndex,
                 lastMappingIndex, context.isLastArea(), mapping.font).build();
+        textArea.setChangeBarList(getChangeBarList());
 
         // wordSpaceDim is computed in relation to wordSpaceIPD.opt
         // but the renderer needs to know the adjustment in relation
@@ -413,6 +419,7 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
                 textArea = new TextArea(width.getStretch(), width.getShrink(),
                         adjust);
             }
+            textArea.setChangeBarList(getChangeBarList());
         }
 
         private void setInlineProgressionDimension() {
@@ -506,8 +513,13 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
             if (!gposAdjusted) {
                 gposAdjustments = null;
             }
-            textArea.addWord(wordChars.toString(), wordIPD, letterSpaceAdjust,
-                    getNonEmptyLevels(), gposAdjustments, blockProgressionOffset);
+            textArea.addWord(wordChars.toString(), wordIPD, letterSpaceAdjust, getNonEmptyLevels(), gposAdjustments,
+                    blockProgressionOffset, isWordSpace(endIndex + 1));
+        }
+
+        private boolean isWordSpace(int mappingIndex) {
+            return userAgent.isAccessibilityEnabled()
+                    && mappingIndex < mappings.size() - 1 && getGlyphMapping(mappingIndex).isSpace;
         }
 
         private int[] getNonEmptyLevels() {
@@ -549,7 +561,10 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
         }
 
         private void addHyphenationChar() {
-            wordChars.append(foText.getCommonHyphenation().getHyphChar(font));
+            Character hyphChar = foText.getCommonHyphenation().getHyphChar(font);
+            if (hyphChar != null) {
+                wordChars.append(hyphChar);
+            }
             // [TBD] expand bidi word levels, letter space adjusts, gpos adjusts
             // [TBD] [GA] problematic in bidi context... what is level of hyphen?
             textArea.setHyphenated();
@@ -832,7 +847,14 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
                 font.mapChar(ch);
                 // preserved space or non-breaking space:
                 // create the GlyphMapping object
-                mapping = new GlyphMapping(nextStart, nextStart + 1, 1, 0, wordSpaceIPD, false, true,
+                MinOptMax areaIPD;
+                if (prevMapping != null && prevMapping.isSpace) {
+                    areaIPD = wordSpaceIPD.minus(letterSpaceIPD);
+                } else {
+                    areaIPD = wordSpaceIPD;
+                }
+
+                mapping = new GlyphMapping(nextStart, nextStart + 1, 1, 0, areaIPD, false, true,
                         breakOpportunity, spaceFont, level, null);
                 thisStart = nextStart + 1;
             } else if (CharUtilities.isFixedWidthSpace(ch) || CharUtilities.isZeroWidthSpace(ch)) {
@@ -1487,6 +1509,15 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
                 }
         }
 
+    }
+
+    @Override
+    public List<ChangeBar> getChangeBarList() {
+        if (foText == null) {
+            return null;
+        } else {
+            return foText.getChangeBarList();
+        }
     }
 
     /** {@inheritDoc} */

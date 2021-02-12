@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: BlockStackingLayoutManager.java 1805173 2017-08-16 10:50:04Z ssteiner $ */
+/* $Id: BlockStackingLayoutManager.java 1835810 2018-07-13 10:29:57Z ssteiner $ */
 
 package org.apache.fop.layoutmgr;
 
@@ -125,6 +125,7 @@ public abstract class BlockStackingLayoutManager extends AbstractLayoutManager
         int sp = TraitSetter.getEffectiveSpace(adjust, minoptmax);
         if (sp != 0) {
             Block spacer = new Block();
+            spacer.setChangeBarList(getChangeBarList());
             spacer.setBPD(sp);
             parentLayoutManager.addChildArea(spacer);
         }

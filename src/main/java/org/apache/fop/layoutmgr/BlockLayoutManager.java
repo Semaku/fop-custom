@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: BlockLayoutManager.java 1790795 2017-04-10 10:03:35Z cbowditch $ */
+/* $Id: BlockLayoutManager.java 1835810 2018-07-13 10:29:57Z ssteiner $ */
 
 package org.apache.fop.layoutmgr;
 
@@ -360,6 +360,7 @@ public class BlockLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
     public Area getParentArea(Area childArea) {
         if (curBlockArea == null) {
             curBlockArea = new Block();
+            curBlockArea.setChangeBarList(getChangeBarList());
 
             curBlockArea.setIPD(super.getContentAreaIPD());
 

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: RTFHandler.java 1785982 2017-03-08 15:15:06Z ssteiner $ */
+/* $Id: RTFHandler.java 1860626 2019-06-04 15:47:58Z cbowditch $ */
 
 package org.apache.fop.render.rtf;
 
@@ -437,8 +437,7 @@ public class RTFHandler extends FOEventHandler {
 
             RtfTableCell cellParent = (RtfTableCell)textrun.getParentOfClass(RtfTableCell.class);
             if (cellParent != null && par != null) {
-                int iDepth = cellParent.findChildren(textrun);
-                cellParent.setLastParagraph(par, iDepth);
+                cellParent.setLastParagraph(par);
             }
 
             int breakValue = toRtfBreakValue(bl.getBreakAfter());

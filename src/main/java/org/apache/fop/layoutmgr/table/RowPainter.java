@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: RowPainter.java 1761021 2016-09-16 11:40:57Z ssteiner $ */
+/* $Id: RowPainter.java 1835810 2018-07-13 10:29:57Z ssteiner $ */
 
 package org.apache.fop.layoutmgr.table;
 
@@ -472,6 +472,7 @@ class RowPainter {
 
         //generate the block area
         Block block = new Block();
+        block.setChangeBarList(tclm.getTableLM().getFObj().getChangeBarList());
         block.setPositioning(Block.ABSOLUTE);
         block.addTrait(Trait.IS_REFERENCE_AREA, Boolean.TRUE);
         block.setIPD(ipd);

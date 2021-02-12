@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: LineLayoutManager.java 1761026 2016-09-16 12:50:43Z ssteiner $ */
+/* $Id: LineLayoutManager.java 1862365 2019-07-01 10:18:11Z ssteiner $ */
 
 package org.apache.fop.layoutmgr.inline;
 
@@ -1485,7 +1485,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
                 sbChars.toString(),
                 hyphenationProperties.hyphenationRemainCharacterCount.getValue(),
                 hyphenationProperties.hyphenationPushCharacterCount.getValue(),
-                getFObj().getUserAgent().getEventBroadcaster());
+                getFObj().getUserAgent());
         // They hyph structure contains the information we need
         // Now start from prev: reset to that position, ask that LM to get
         // a Position for the first hyphenation offset. If the offset isn't in
@@ -1554,6 +1554,8 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         LineArea lineArea = new LineArea(
                 (lbp.getLeafPos() < seq.size() - 1 ? textAlignment : textAlignmentLast),
                 lbp.difference, lbp.availableStretch, lbp.availableShrink);
+        lineArea.setChangeBarList(getChangeBarList());
+
         if (lbp.startIndent != 0) {
             lineArea.addTrait(Trait.START_INDENT, lbp.startIndent);
         }
@@ -1669,6 +1671,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         }
 
         LineArea lineArea = new LineArea();
+        lineArea.setChangeBarList(getChangeBarList());
         setCurrentArea(lineArea);
         LayoutContext lc = LayoutContext.newInstance();
         lc.setAlignmentContext(alignmentContext);

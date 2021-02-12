@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: ExternalGraphicLayoutManager.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id: ExternalGraphicLayoutManager.java 1835810 2018-07-13 10:29:57Z ssteiner $ */
 
 package org.apache.fop.layoutmgr.inline;
 
@@ -43,7 +43,9 @@ public class ExternalGraphicLayoutManager extends AbstractGraphicsLayoutManager 
 
     /** {@inheritDoc} */
     protected Area getChildArea() {
-        return new Image(((ExternalGraphic) fobj).getSrc());
+        Image im = new Image(((ExternalGraphic) fobj).getSrc());
+        im.setChangeBarList(getChangeBarList());
+        return im;
     }
 
     /** {@inheritDoc}<br>TODO: currently only defined for one specific type of image. */
