@@ -5,7 +5,7 @@
   <groupId>com.lagivan.xmlgraphics</groupId>
   <artifactId>fop-custom</artifactId>
   <packaging>jar</packaging>
-  <version>2.3.0</version>
+  <version>2.3.1</version>
   <name>fop-custom</name>
   <description>Customizations to Apache FOP</description>
 
@@ -19,6 +19,13 @@
       <artifactId>fop</artifactId>
       <version>2.4</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>de.rototor.jeuclid</groupId>
+      <artifactId>jeuclid-fop</artifactId>
+      <version>3.1.14</version>
+      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
