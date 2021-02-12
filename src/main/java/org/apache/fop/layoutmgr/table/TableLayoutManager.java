@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: TableLayoutManager.java 1761021 2016-09-16 11:40:57Z ssteiner $ */
+/* $Id: TableLayoutManager.java 1835810 2018-07-13 10:29:57Z ssteiner $ */
 
 package org.apache.fop.layoutmgr.table;
 
@@ -762,6 +762,8 @@ public class TableLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
     public Area getParentArea(Area childArea) {
         if (curBlockArea == null) {
             curBlockArea = new Block();
+            curBlockArea.setChangeBarList(getChangeBarList());
+
             // Set up dimensions
             // Must get dimensions from parent area
             /*Area parentArea =*/ parentLayoutManager.getParentArea(curBlockArea);

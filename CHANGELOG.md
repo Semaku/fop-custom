@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.3.0] - 2021-02-12
+### Changed
+- Upgraded to FOP 2.4
+
 ## [2.2.0] - 2020-11-13
 ### Changed
 - Limited support to FOP 2.1

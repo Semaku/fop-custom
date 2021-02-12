@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: BlockLevelEventProducer.java 1723297 2016-01-06 12:13:52Z ssteiner $ */
+/* $Id: BlockLevelEventProducer.java 1733431 2016-03-03 09:40:50Z gadams $ */
 
 package org.apache.fop.layoutmgr;
 

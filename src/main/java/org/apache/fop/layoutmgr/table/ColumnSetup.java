@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 
-/* $Id: ColumnSetup.java 1610839 2014-07-15 20:25:58Z vhennebert $ */
+/* $Id: ColumnSetup.java 1761021 2016-09-16 11:40:57Z ssteiner $ */
 
 package org.apache.fop.layoutmgr.table;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,9 +72,8 @@ public class ColumnSetup {
         List rawCols = table.getColumns();
         if (rawCols != null) {
             int colnum = 1;
-            ListIterator iter = rawCols.listIterator();
-            while (iter.hasNext()) {
-                TableColumn col = (TableColumn)iter.next();
+            for (Object rawCol : rawCols) {
+                TableColumn col = (TableColumn) rawCol;
                 if (col == null) {
                     continue;
                 }

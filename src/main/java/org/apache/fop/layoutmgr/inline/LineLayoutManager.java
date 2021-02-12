@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: LineLayoutManager.java 1681435 2015-05-24 11:14:22Z adelmelle $ */
+/* $Id: LineLayoutManager.java 1862365 2019-07-01 10:18:11Z ssteiner $ */
 
 package org.apache.fop.layoutmgr.inline;
 
@@ -300,8 +300,8 @@ public class LineLayoutManager extends InlineStackingLayoutManager
          * @return true if the sequence contains a box
          */
         public boolean containsBox() {
-            for (int i = 0; i < this.size(); i++) {
-                KnuthElement el = (KnuthElement)this.get(i);
+            for (Object o : this) {
+                KnuthElement el = (KnuthElement) o;
                 if (el.isBox()) {
                     return true;
                 }
@@ -397,22 +397,20 @@ public class LineLayoutManager extends InlineStackingLayoutManager
                 addedPositions = 0;
             }
 
-            if (log.isWarnEnabled()) {
-                int lack = difference + bestActiveNode.availableShrink;
-                // if this LLM is nested inside a BlockContainerLayoutManager that is constraining
-                // the available width and thus responsible for the overflow then we do not issue
-                // warning event here and instead let the BCLM handle that at a later stage
-                if (lack < 0 && !handleOverflow(-lack)) {
-                    InlineLevelEventProducer eventProducer
-                            = InlineLevelEventProducer.Provider.get(
-                            getFObj().getUserAgent().getEventBroadcaster());
-                    if (curChildLM.getFObj() == null) {
-                        eventProducer.lineOverflows(this, getFObj().getName(), bestActiveNode.line,
-                                -lack, getFObj().getLocator());
-                    } else {
-                        eventProducer.lineOverflows(this, curChildLM.getFObj().getName(), bestActiveNode.line,
-                                -lack, curChildLM.getFObj().getLocator());
-                    }
+            int lack = difference + bestActiveNode.availableShrink;
+            // if this LLM is nested inside a BlockContainerLayoutManager that is constraining
+            // the available width and thus responsible for the overflow then we do not issue
+            // warning event here and instead let the BCLM handle that at a later stage
+            if (lack < 0 && !handleOverflow(-lack)) {
+                InlineLevelEventProducer eventProducer
+                        = InlineLevelEventProducer.Provider.get(
+                        getFObj().getUserAgent().getEventBroadcaster());
+                if (curChildLM.getFObj() == null) {
+                    eventProducer.lineOverflows(this, getFObj().getName(), bestActiveNode.line,
+                            -lack, getFObj().getLocator());
+                } else {
+                    eventProducer.lineOverflows(this, curChildLM.getFObj().getName(), bestActiveNode.line,
+                            -lack, curChildLM.getFObj().getLocator());
                 }
             }
 
@@ -989,10 +987,9 @@ public class LineLayoutManager extends InlineStackingLayoutManager
 
             if (!seq.isInlineSequence()) {
                 List<ListElement> targetList = new LinkedList<ListElement>();
-                ListIterator listIter = seq.listIterator();
-                while (listIter.hasNext()) {
+                for (Object aSeq : seq) {
                     ListElement tempElement;
-                    tempElement = (ListElement) listIter.next();
+                    tempElement = (ListElement) aSeq;
                     LayoutManager lm = tempElement.getLayoutManager();
                     if (baselineOffset < 0 && lm != null && lm.hasLineAreaDescendant()) {
                         baselineOffset = lm.getBaselineOffset();
@@ -1483,11 +1480,12 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         // on an inline or wrapper below the block level.
         Hyphenation hyph = Hyphenator.hyphenate(hyphenationProperties.language.getString(),
                 hyphenationProperties.country.getString(),
-                getFObj().getUserAgent().getResourceResolver(),
+                getFObj().getUserAgent().getHyphenationResourceResolver(),
                 getFObj().getUserAgent().getHyphenationPatternNames(),
                 sbChars.toString(),
                 hyphenationProperties.hyphenationRemainCharacterCount.getValue(),
-                hyphenationProperties.hyphenationPushCharacterCount.getValue());
+                hyphenationProperties.hyphenationPushCharacterCount.getValue(),
+                getFObj().getUserAgent());
         // They hyph structure contains the information we need
         // Now start from prev: reset to that position, ask that LM to get
         // a Position for the first hyphenation offset. If the offset isn't in
@@ -1556,11 +1554,13 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         LineArea lineArea = new LineArea(
                 (lbp.getLeafPos() < seq.size() - 1 ? textAlignment : textAlignmentLast),
                 lbp.difference, lbp.availableStretch, lbp.availableShrink);
+        lineArea.setChangeBarList(getChangeBarList());
+
         if (lbp.startIndent != 0) {
             lineArea.addTrait(Trait.START_INDENT, lbp.startIndent);
         }
         if (lbp.endIndent != 0) {
-            lineArea.addTrait(Trait.END_INDENT, new Integer(lbp.endIndent));
+            lineArea.addTrait(Trait.END_INDENT, lbp.endIndent);
         }
         lineArea.setBPD(lbp.lineHeight);
         lineArea.setIPD(lbp.lineWidth);
@@ -1671,6 +1671,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         }
 
         LineArea lineArea = new LineArea();
+        lineArea.setChangeBarList(getChangeBarList());
         setCurrentArea(lineArea);
         LayoutContext lc = LayoutContext.newInstance();
         lc.setAlignmentContext(alignmentContext);

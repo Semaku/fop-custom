@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: TableCellLayoutManager.java 1657872 2015-02-06 15:48:44Z ssteiner $ */
+/* $Id: TableCellLayoutManager.java 1835810 2018-07-13 10:29:57Z ssteiner $ */
 
 package org.apache.fop.layoutmgr.table;
 
@@ -331,8 +331,7 @@ public class TableCellLayoutManager extends BlockStackingLayoutManager {
             return;
         }
         int n = childrenLMs.size();
-        for (int j = 0; j < n; j++) {
-            LayoutManager lm = childrenLMs.get(j);
+        for (LayoutManager lm : childrenLMs) {
             if (lm == null) {
                 return;
             } else if (lm instanceof RetrieveTableMarkerLayoutManager) {
@@ -483,7 +482,7 @@ public class TableCellLayoutManager extends BlockStackingLayoutManager {
                 adjustYOffset(curBlockArea, borderBeforeWidth);
                 Block[][] blocks = new Block[getTableCell().getNumberRowsSpanned()][getTableCell()
                         .getNumberColumnsSpanned()];
-                GridUnit[] gridUnits = (GridUnit[]) primaryGridUnit.getRows().get(startRow);
+                GridUnit[] gridUnits = primaryGridUnit.getRows().get(startRow);
                 int level = getTableCell().getBidiLevelRecursive();
                 for (int x = 0; x < getTableCell().getNumberColumnsSpanned(); x++) {
                     GridUnit gu = gridUnits[x];
@@ -496,7 +495,7 @@ public class TableCellLayoutManager extends BlockStackingLayoutManager {
                         adjustBPD(blocks[startRow][x], -borderWidth);
                     }
                 }
-                gridUnits = (GridUnit[]) primaryGridUnit.getRows().get(endRow);
+                gridUnits = primaryGridUnit.getRows().get(endRow);
                 for (int x = 0; x < getTableCell().getNumberColumnsSpanned(); x++) {
                     GridUnit gu = gridUnits[x];
                     BorderInfo border = gu.getBorderAfter(borderAfterWhich);
@@ -508,21 +507,34 @@ public class TableCellLayoutManager extends BlockStackingLayoutManager {
                     }
                 }
                 for (int y = startRow; y <= endRow; y++) {
-                    gridUnits = (GridUnit[]) primaryGridUnit.getRows().get(y);
+                    gridUnits = primaryGridUnit.getRows().get(y);
                     BorderInfo border = gridUnits[0].getBorderStart();
                     int borderWidth = border.getRetainedWidth() / 2;
                     if (borderWidth > 0) {
-                        addBorder(blocks, y, 0, Trait.BORDER_START, border,
-                                inFirstColumn, level);
-                        adjustXOffset(blocks[y][0], borderWidth);
-                        adjustIPD(blocks[y][0], -borderWidth);
+                        if (level == 1) {
+                            addBorder(blocks, y, gridUnits.length - 1, Trait.BORDER_START, border,
+                                    inFirstColumn, level);
+                            adjustIPD(blocks[y][gridUnits.length - 1], -borderWidth);
+                        } else {
+                            addBorder(blocks, y, 0, Trait.BORDER_START, border,
+                                    inFirstColumn, level);
+                            adjustXOffset(blocks[y][0], borderWidth);
+                            adjustIPD(blocks[y][0], -borderWidth);
+                        }
                     }
                     border = gridUnits[gridUnits.length - 1].getBorderEnd();
                     borderWidth = border.getRetainedWidth() / 2;
                     if (borderWidth > 0) {
-                        addBorder(blocks, y, gridUnits.length - 1, Trait.BORDER_END, border,
-                                inLastColumn, level);
-                        adjustIPD(blocks[y][gridUnits.length - 1], -borderWidth);
+                        if (level == 1) {
+                            addBorder(blocks, y, 0, Trait.BORDER_END, border,
+                                    inLastColumn, level);
+                            adjustXOffset(blocks[y][0], borderWidth);
+                            adjustIPD(blocks[y][0], -borderWidth);
+                        } else {
+                            addBorder(blocks, y, gridUnits.length - 1, Trait.BORDER_END, border,
+                                    inLastColumn, level);
+                            adjustIPD(blocks[y][gridUnits.length - 1], -borderWidth);
+                        }
                     }
                 }
                 int dy = yoffset;
@@ -557,11 +569,13 @@ public class TableCellLayoutManager extends BlockStackingLayoutManager {
         if (usedBPD < cellBPD) {
             if (getTableCell().getDisplayAlign() == EN_CENTER) {
                 Block space = new Block();
+                space.setChangeBarList(getChangeBarList());
                 space.setBPD((cellBPD - usedBPD) / 2);
                 space.setBidiLevel(getTableCell().getBidiLevelRecursive());
                 curBlockArea.addBlock(space);
             } else if (getTableCell().getDisplayAlign() == EN_AFTER) {
                 Block space = new Block();
+                space.setChangeBarList(getChangeBarList());
                 space.setBPD(cellBPD - usedBPD);
                 space.setBidiLevel(getTableCell().getBidiLevelRecursive());
                 curBlockArea.addBlock(space);
@@ -648,6 +662,7 @@ public class TableCellLayoutManager extends BlockStackingLayoutManager {
                            boolean outer, int level) {
         if (blocks[i][j] == null) {
             blocks[i][j] = new Block();
+            blocks[i][j].setChangeBarList(getChangeBarList());
             blocks[i][j].addTrait(Trait.IS_REFERENCE_AREA, Boolean.TRUE);
             blocks[i][j].setPositioning(Block.ABSOLUTE);
             blocks[i][j].setBidiLevel(level);
@@ -679,6 +694,7 @@ public class TableCellLayoutManager extends BlockStackingLayoutManager {
         int paddingEnd = padding.getPaddingEnd(false, this);
 
         Block block = new Block();
+        block.setChangeBarList(getChangeBarList());
         TraitSetter.setProducerID(block, getTable().getId());
         block.setPositioning(Block.ABSOLUTE);
         block.setIPD(cellIPD + paddingStart + paddingEnd);
@@ -705,6 +721,7 @@ public class TableCellLayoutManager extends BlockStackingLayoutManager {
     public Area getParentArea(Area childArea) {
         if (curBlockArea == null) {
             curBlockArea = new Block();
+            curBlockArea.setChangeBarList(getChangeBarList());
             curBlockArea.addTrait(Trait.IS_REFERENCE_AREA, Boolean.TRUE);
             TraitSetter.setProducerID(curBlockArea, getTableCell().getId());
             curBlockArea.setPositioning(Block.ABSOLUTE);

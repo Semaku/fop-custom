@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
-/* $Id: RowPainter.java 1681435 2015-05-24 11:14:22Z adelmelle $ */
+/* $Id: RowPainter.java 1835810 2018-07-13 10:29:57Z ssteiner $ */
 
 package org.apache.fop.layoutmgr.table;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -128,8 +127,8 @@ class RowPainter {
 
         if (tablePartBackground != null) {
             TableLayoutManager tableLM = tclm.getTableLM();
-            for (Iterator iter = tablePartBackgroundAreas.iterator(); iter.hasNext();) {
-                Block backgroundArea = (Block) iter.next();
+            for (Object tablePartBackgroundArea : tablePartBackgroundAreas) {
+                Block backgroundArea = (Block) tablePartBackgroundArea;
                 TraitSetter.addBackground(backgroundArea, tablePartBackground, tableLM,
                         -backgroundArea.getXOffset(), tablePartOffset - backgroundArea.getYOffset(),
                         tableLM.getContentAreaIPD(), currentRowOffset - tablePartOffset);
@@ -170,10 +169,9 @@ class RowPainter {
                 firstRowOnPageIndex = firstRowIndex;
             }
         }
-        Iterator partIter = tcpos.cellParts.iterator();
         //Iterate over all grid units in the current step
-        while (partIter.hasNext()) {
-            CellPart cellPart = (CellPart)partIter.next();
+        for (Object cellPart1 : tcpos.cellParts) {
+            CellPart cellPart = (CellPart) cellPart1;
             if (log.isDebugEnabled()) {
                 log.debug(">" + cellPart);
             }
@@ -474,6 +472,7 @@ class RowPainter {
 
         //generate the block area
         Block block = new Block();
+        block.setChangeBarList(tclm.getTableLM().getFObj().getChangeBarList());
         block.setPositioning(Block.ABSOLUTE);
         block.addTrait(Trait.IS_REFERENCE_AREA, Boolean.TRUE);
         block.setIPD(ipd);
@@ -529,7 +528,7 @@ class RowPainter {
          * below.
          */
         for (int i = rowOffsets.size(); i <= rowIndex - firstRowIndex; i++) {
-            rowOffsets.add(new Integer(offset));
+            rowOffsets.add(offset);
         }
     }
 
@@ -540,7 +539,7 @@ class RowPainter {
      * @return its y-offset on the page
      */
     private int getRowOffset(int rowIndex) {
-        return ((Integer) rowOffsets.get(rowIndex - firstRowIndex)).intValue();
+        return (Integer) rowOffsets.get(rowIndex - firstRowIndex);
     }
 
     // TODO get rid of that

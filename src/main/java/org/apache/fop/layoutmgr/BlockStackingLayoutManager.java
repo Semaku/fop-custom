@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: BlockStackingLayoutManager.java 1681384 2015-05-23 21:07:13Z adelmelle $ */
+/* $Id: BlockStackingLayoutManager.java 1835810 2018-07-13 10:29:57Z ssteiner $ */
 
 package org.apache.fop.layoutmgr;
 
@@ -125,6 +125,7 @@ public abstract class BlockStackingLayoutManager extends AbstractLayoutManager
         int sp = TraitSetter.getEffectiveSpace(adjust, minoptmax);
         if (sp != 0) {
             Block spacer = new Block();
+            spacer.setChangeBarList(getChangeBarList());
             spacer.setBPD(sp);
             parentLayoutManager.addChildArea(spacer);
         }
@@ -183,7 +184,7 @@ public abstract class BlockStackingLayoutManager extends AbstractLayoutManager
 
     /**
      * @param len length in millipoints to span with bp units
-     * @return the minimum integer n such that n * bpUnit >= len
+     * @return the minimum integer n such that n * bpUnit &gt;= len
      */
     protected int neededUnits(int len) {
         return (int) Math.ceil((float)len / bpUnit);
