@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: BlockLayoutManager.java 1562429 2014-01-29 12:52:26Z vhennebert $ */
+/* $Id: BlockLayoutManager.java 1790795 2017-04-10 10:03:35Z cbowditch $ */
 
 package org.apache.fop.layoutmgr;
 
@@ -334,6 +334,7 @@ public class BlockLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
 
         TraitSetter.addSpaceBeforeAfter(curBlockArea, layoutContext.getSpaceAdjust(),
                 effSpaceBefore, effSpaceAfter);
+        TraitSetter.setVisibility(curBlockArea, getBlockFO().getVisibility());
         flush();
 
         curBlockArea = null;

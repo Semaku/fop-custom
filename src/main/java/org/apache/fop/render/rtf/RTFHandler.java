@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: RTFHandler.java 1681438 2015-05-24 12:14:23Z adelmelle $ */
+/* $Id: RTFHandler.java 1785982 2017-03-08 15:15:06Z ssteiner $ */
 
 package org.apache.fop.render.rtf;
 
@@ -249,8 +249,8 @@ public class RTFHandler extends FOEventHandler {
             int useAblePageWidth = pagemaster.getPageWidth().getValue()
                     - pagemaster.getCommonMarginBlock().marginLeft.getValue()
                     - pagemaster.getCommonMarginBlock().marginRight.getValue()
-                    - sect.getRtfAttributes().getValueAsInteger(RtfPage.MARGIN_LEFT).intValue()
-                    - sect.getRtfAttributes().getValueAsInteger(RtfPage.MARGIN_RIGHT).intValue();
+                    - sect.getRtfAttributes().getValueAsInteger(RtfPage.MARGIN_LEFT)
+                    - sect.getRtfAttributes().getValueAsInteger(RtfPage.MARGIN_RIGHT);
             percentManager.setDimension(pageSeq, useAblePageWidth);
 
             bHeaderSpecified = false;
@@ -588,10 +588,10 @@ public class RTFHandler extends FOEventHandler {
             percentManager.setDimension(tc, iWidth);
 
             //convert to twips
-            Float width = new Float(FoUnitsConverter.getInstance().convertMptToTwips(iWidth));
+            Float width = FoUnitsConverter.getInstance().convertMptToTwips(iWidth);
             builderContext.getTableContext().setNextColumnWidth(width);
             builderContext.getTableContext().setNextColumnRowSpanning(
-                    new Integer(0), null);
+                    0, null);
             builderContext.getTableContext().setNextFirstSpanningCol(false);
         } catch (Exception e) {
             log.error("startColumn: " + e.getMessage());
@@ -601,9 +601,6 @@ public class RTFHandler extends FOEventHandler {
 
     /** {@inheritDoc} */
     public void endColumn(TableColumn tc) {
-        if (bDefer) {
-            return;
-        }
     }
 
     /** {@inheritDoc} */
@@ -778,7 +775,7 @@ public class RTFHandler extends FOEventHandler {
             //while the current column is in row-spanning, act as if
             //a vertical merged cell would have been specified.
             while (tctx.getNumberOfColumns() > tctx.getColumnIndex()
-                    && tctx.getColumnRowSpanningNumber().intValue() > 0) {
+                    && tctx.getColumnRowSpanningNumber() > 0) {
                 RtfTableCell vCell = row.newTableCellMergedVertically(
                         (int)tctx.getColumnWidth(),
                         tctx.getColumnRowSpanningAttrs());
@@ -819,7 +816,7 @@ public class RTFHandler extends FOEventHandler {
             //while the current column is in row-spanning, act as if
             //a vertical merged cell would have been specified.
             while (tctx.getNumberOfColumns() > tctx.getColumnIndex()
-                    && tctx.getColumnRowSpanningNumber().intValue() > 0) {
+                    && tctx.getColumnRowSpanningNumber() > 0) {
                 RtfTableCell vCell = row.newTableCellMergedVertically(
                         (int)tctx.getColumnWidth(),
                         tctx.getColumnRowSpanningAttrs());
@@ -844,11 +841,11 @@ public class RTFHandler extends FOEventHandler {
                 cell.setVMerge(RtfTableCell.MERGE_START);
 
                 // set the number of rows spanned
-                tctx.setCurrentColumnRowSpanning(new Integer(numberRowsSpanned),
+                tctx.setCurrentColumnRowSpanning(numberRowsSpanned,
                         cell.getRtfAttributes());
             } else {
                 tctx.setCurrentColumnRowSpanning(
-                        new Integer(numberRowsSpanned), null);
+                        numberRowsSpanned, null);
             }
 
             //process number-columns-spanned attribute
@@ -873,11 +870,11 @@ public class RTFHandler extends FOEventHandler {
 
                         // set the number of rows spanned
                         tctx.setCurrentColumnRowSpanning(
-                                new Integer(numberRowsSpanned),
+                                numberRowsSpanned,
                                 cell.getRtfAttributes());
                     } else {
                         tctx.setCurrentColumnRowSpanning(
-                                new Integer(numberRowsSpanned), cell.getRtfAttributes());
+                                numberRowsSpanned, cell.getRtfAttributes());
                     }
                 }
             }
@@ -1452,9 +1449,6 @@ public class RTFHandler extends FOEventHandler {
 
     /** {@inheritDoc} */
     public void endPageNumber(PageNumber pagenum) {
-        if (bDefer) {
-            return;
-        }
     }
 
     /** {@inheritDoc} */
@@ -1757,8 +1751,8 @@ public class RTFHandler extends FOEventHandler {
                 //Calculation for column-widths which are not set
                 prepareTable(table);
 
-                for (Iterator it = table.getColumns().iterator(); it.hasNext();) {
-                    recurseFONode((FONode) it.next());
+                for (Object o : table.getColumns()) {
+                    recurseFONode((FONode) o);
                 }
             } else {
                 //TODO Implement implicit column setup handling!

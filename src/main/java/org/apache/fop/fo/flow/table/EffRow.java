@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 
-/* $Id: EffRow.java 807014 2009-08-23 20:27:48Z adelmelle $ */
+/* $Id: EffRow.java 1761020 2016-09-16 11:17:35Z ssteiner $ */
 
 package org.apache.fop.fo.flow.table;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.fop.fo.Constants;

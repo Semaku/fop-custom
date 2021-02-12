@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: TableContentLayoutManager.java 1657872 2015-02-06 15:48:44Z ssteiner $ */
+/* $Id: TableContentLayoutManager.java 1761020 2016-09-16 11:17:35Z ssteiner $ */
 
 package org.apache.fop.layoutmgr.table;
 
@@ -893,8 +893,8 @@ public class TableContentLayoutManager implements PercentBaseContext {
             getTableLM().registerMarkers(body.getMarkers(), true, isFirstPos, isLastPos);
         }
         painter.startTablePart(body);
-        for (Iterator iter = positions.iterator(); iter.hasNext();) {
-            painter.handleTableContentPosition((TableContentPosition) iter.next());
+        for (Object position : positions) {
+            painter.handleTableContentPosition((TableContentPosition) position);
         }
         getTableLM().getCurrentPV().registerMarkers(body.getMarkers(),
                 false, isFirstPos, isLastPos);

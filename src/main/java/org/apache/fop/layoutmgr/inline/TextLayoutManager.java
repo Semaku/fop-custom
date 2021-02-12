@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: TextLayoutManager.java 1681435 2015-05-24 11:14:22Z adelmelle $ */
+/* $Id: TextLayoutManager.java 1827168 2018-03-19 08:49:57Z ssteiner $ */
 
 package org.apache.fop.layoutmgr.inline;
 
@@ -695,7 +695,7 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
 
         /**
          * The <code>GlyphMapping</code> stores information about spaces.
-         * <p/>
+         * <p>
          * Add the spaces - except zero-width spaces - to the TextArea.
          */
         private void addSpaces() {
@@ -1055,8 +1055,10 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
 
             //log.info("Word: " + new String(textArray, startIndex, stopIndex - startIndex));
             for (int i = startIndex; i < stopIndex; i++) {
-                char ch = foText.charAt(i);
-                newIPD = newIPD.plus(font.getCharWidth(ch));
+                int cp = Character.codePointAt(foText, i);
+                i += Character.charCount(cp) - 1;
+
+                newIPD = newIPD.plus(font.getCharWidth(cp));
                 //if (i > startIndex) {
                 if (i < stopIndex) {
                     MinOptMax letterSpaceAdjust = letterSpaceAdjustArray[i + 1];
@@ -1147,9 +1149,8 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
             int oldIndex = -1;
             int changeIndex;
             PendingChange currChange;
-            ListIterator changeListIterator = changeList.listIterator();
-            while (changeListIterator.hasNext()) {
-                currChange = (PendingChange) changeListIterator.next();
+            for (Object aChangeList : changeList) {
+                currChange = (PendingChange) aChangeList;
                 if (currChange.index == oldIndex) {
                     mappingsAdded++;
                     changeIndex = currChange.index + mappingsAdded - mappingsRemoved;
@@ -1380,7 +1381,7 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
             // if a break occurs the content width increases,
             // otherwise nothing happens
             addElementsForAHyphen(baseList, alignment, hyphIPD, widthIfNoBreakOccurs,
-                    mapping.breakOppAfter && mapping.isHyphenated);
+                    mapping.breakOppAfter);
         } else if (suppressibleLetterSpace) {
             // the word fragment ends with a character that acts as a hyphen
             // if a break occurs the width does not increase,

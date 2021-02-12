@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: BlockStackingLayoutManager.java 1681384 2015-05-23 21:07:13Z adelmelle $ */
+/* $Id: BlockStackingLayoutManager.java 1805173 2017-08-16 10:50:04Z ssteiner $ */
 
 package org.apache.fop.layoutmgr;
 
@@ -183,7 +183,7 @@ public abstract class BlockStackingLayoutManager extends AbstractLayoutManager
 
     /**
      * @param len length in millipoints to span with bp units
-     * @return the minimum integer n such that n * bpUnit >= len
+     * @return the minimum integer n such that n * bpUnit &gt;= len
      */
     protected int neededUnits(int len) {
         return (int) Math.ceil((float)len / bpUnit);

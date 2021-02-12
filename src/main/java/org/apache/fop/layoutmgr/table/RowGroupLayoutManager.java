@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: RowGroupLayoutManager.java 1362226 2012-07-16 19:29:06Z vhennebert $ */
+/* $Id: RowGroupLayoutManager.java 1761020 2016-09-16 11:17:35Z ssteiner $ */
 
 package org.apache.fop.layoutmgr.table;
 
