@@ -111,9 +111,10 @@ public class XMLResourceBundle extends ResourceBundle {
      */
     public static ResourceBundle getXMLBundle(String baseName, Locale locale, ClassLoader loader)
             throws MissingResourceException {
-        if (loader == null) {
-            throw new NullPointerException("loader must not be null");
-        }
+//        This check causes a fake NPE when DITA-OT is integrated with eXist-db. That's why I commented it out.
+//        if (loader == null) {
+//            throw new NullPointerException("loader must not be null");
+//        }
         if (baseName == null) {
             throw new NullPointerException("baseName must not be null");
         }
