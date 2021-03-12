@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: TableContentLayoutManager.java 1761020 2016-09-16 11:17:35Z ssteiner $ */
+/* $Id: TableContentLayoutManager.java 1872773 2020-01-14 12:07:58Z ssteiner $ */
 
 package org.apache.fop.layoutmgr.table;
 
@@ -654,8 +654,7 @@ public class TableContentLayoutManager implements PercentBaseContext {
          * represent the content. In such a case the break is simply disabled by setting
          * its penalty to infinite.
          */
-        // Check empty list size to avoid an exception at elemItem.previous()
-        if (returnList.size() != 0) {
+        if (!returnList.isEmpty()) {
             ListIterator elemIter = returnList.listIterator(returnList.size());
             ListElement elem = (ListElement) elemIter.previous();
             if (elem instanceof KnuthGlue) {
@@ -812,7 +811,7 @@ public class TableContentLayoutManager implements PercentBaseContext {
         tableLM.repeatAddAreasForSavedTableHeaderTableCellLayoutManagers();
         atLeastOnce = true;
 
-        if (footerElements != null) {
+        if (footerElements != null && !footerElements.isEmpty()) {
             boolean ancestorTreatAsArtifact = layoutContext.treatAsArtifact();
             layoutContext.setTreatAsArtifact(treatFooterAsArtifact);
             //Positions for footers are simply added at the end

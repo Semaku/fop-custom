@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: BlockContainerLayoutManager.java 1835810 2018-07-13 10:29:57Z ssteiner $ */
+/* $Id: BlockContainerLayoutManager.java 1877372 2020-05-05 08:12:02Z ssteiner $ */
 
 package org.apache.fop.layoutmgr;
 
@@ -161,7 +161,7 @@ public class BlockContainerLayoutManager extends SpacedBorderedPaddedBlockLayout
         return indents;
     }
 
-    private boolean isAbsoluteOrFixed() {
+    protected boolean isAbsoluteOrFixed() {
         return (abProps.absolutePosition == EN_ABSOLUTE
                 || abProps.absolutePosition == EN_FIXED);
     }
