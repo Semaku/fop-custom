@@ -1,5 +1,5 @@
 # fop-custom
-Library with customizations & fixes to Apache FOP 2.4
+Library with customizations & fixes to Apache FOP 2.5
 
 It includes fixes for:
   * https://issues.apache.org/jira/browse/FOP-2469
