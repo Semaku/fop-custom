@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: BlockStackingLayoutManager.java 1835810 2018-07-13 10:29:57Z ssteiner $ */
+/* $Id: BlockStackingLayoutManager.java 1875645 2020-03-25 14:44:35Z ssteiner $ */
 
 package org.apache.fop.layoutmgr;
 
@@ -89,6 +89,7 @@ public abstract class BlockStackingLayoutManager extends AbstractLayoutManager
     private Position auxiliaryPosition;
 
     private int contentAreaIPD;
+    private boolean isRestartAtLM;
 
     /**
      * @param node the fo this LM deals with
@@ -245,6 +246,7 @@ public abstract class BlockStackingLayoutManager extends AbstractLayoutManager
     @Override
     public List getNextKnuthElements(LayoutContext context, int alignment,
                                      Stack lmStack, Position restartPosition, LayoutManager restartAtLM) {
+        isRestartAtLM = restartAtLM != null;
         referenceIPD = context.getRefIPD();
         updateContentAreaIPDwithOverconstrainedAdjust(context);
 
@@ -843,6 +845,9 @@ public abstract class BlockStackingLayoutManager extends AbstractLayoutManager
     public Keep getKeepTogether() {
         Keep keep = Keep.getKeep(getKeepTogetherProperty());
         keep = keep.compare(getParentKeepTogether());
+        if (getFObj().isForceKeepTogether()) {
+            keep = Keep.KEEP_ALWAYS;
+        }
         return keep;
     }
 
@@ -1268,6 +1273,10 @@ public abstract class BlockStackingLayoutManager extends AbstractLayoutManager
             return ((InlineContainerLayoutManager) getParent()).handleOverflow(milliPoints);
         }
         return false;
+    }
+
+    public boolean isRestartAtLM() {
+        return isRestartAtLM;
     }
 }
 

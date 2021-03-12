@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: FopFactory.java 1862365 2019-07-01 10:18:11Z ssteiner $ */
+/* $Id: FopFactory.java 1873298 2020-01-29 11:28:26Z ssteiner $ */
 
 package org.apache.fop.apps;
 
@@ -339,6 +339,10 @@ public final class FopFactory implements ImageContext {
      */
     boolean isAccessibilityEnabled() {
         return config.isAccessibilityEnabled();
+    }
+
+    boolean isKeepEmptyTags() {
+        return config.isKeepEmptyTags();
     }
 
     /** @see FopFactoryConfig#getImageManager() */
