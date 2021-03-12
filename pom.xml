@@ -5,7 +5,7 @@
   <groupId>com.semaku.xmlgraphics</groupId>
   <artifactId>fop-custom</artifactId>
   <packaging>jar</packaging>
-  <version>2.3.2</version>
+  <version>2.4.0</version>
   <name>fop-custom</name>
   <description>Customizations to Apache FOP</description>
 

@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.4.0] - 2021-03-12
+### Changed
+- Upgraded to FOP 2.5
+
 ## [2.3.2] - 2021-02-18
 ### Fixed
 - Fixed NPE when running in eXist-db
