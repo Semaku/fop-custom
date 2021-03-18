@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.5.0] - 2021-03-19
+### Changed
+- Upgraded to FOP 2.6
+### Fixed
+- Removed obsolete fix for https://issues.apache.org/jira/browse/FOP-2536 (already fixed in 2.6)
+
 ## [2.4.0] - 2021-03-12
 ### Changed
 - Upgraded to FOP 2.5
