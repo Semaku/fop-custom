@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: TextLayoutManager.java 1863872 2019-07-27 13:57:02Z matthias $ */
+/* $Id: TextLayoutManager.java 1884753 2020-12-23 13:37:05Z cbowditch $ */
 
 package org.apache.fop.layoutmgr.inline;
 
@@ -1051,11 +1051,19 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
 
     /** {@inheritDoc} */
     public void hyphenate(Position pos, HyphContext hyphContext) {
-        GlyphMapping mapping = getGlyphMapping(((LeafPosition) pos).getLeafPos() + changeOffset);
+        int glyphIndex = ((LeafPosition) pos).getLeafPos() + changeOffset;
+        GlyphMapping mapping = getGlyphMapping(glyphIndex);
         int startIndex = mapping.startIndex;
         int stopIndex;
         boolean nothingChanged = true;
         Font font = mapping.font;
+
+        // skip hyphenation if previously hyphenated using soft hyphen
+        if (mapping.isHyphenated || (glyphIndex > 0 && getGlyphMapping(glyphIndex - 1).isHyphenated)) {
+            stopIndex = mapping.endIndex;
+            hyphContext.updateOffset(stopIndex - startIndex);
+            startIndex = stopIndex;
+        }
 
         while (startIndex < mapping.endIndex) {
             MinOptMax newIPD = MinOptMax.ZERO;
@@ -1111,7 +1119,7 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
                                 new GlyphMapping(startIndex, stopIndex, 0,
                                         letterSpaceCount, newIPD, hyphenFollows,
                                         false, false, font, -1, null),
-                                ((LeafPosition) pos).getLeafPos() + changeOffset));
+                                glyphIndex));
                 nothingChanged = false;
             }
             startIndex = stopIndex;

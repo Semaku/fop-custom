@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: FopFactory.java 1873298 2020-01-29 11:28:26Z ssteiner $ */
+/* $Id: FopFactory.java 1884907 2020-12-29 13:33:34Z ssteiner $ */
 
 package org.apache.fop.apps;
 
@@ -218,6 +218,10 @@ public final class FopFactory implements ImageContext {
      */
     public Fop newFop(String outputFormat, FOUserAgent userAgent) throws FOPException {
         return userAgent.newFop(outputFormat, null);
+    }
+
+    boolean isTableBorderOverpaint() {
+        return config.isTableBorderOverpaint();
     }
 
     /**
